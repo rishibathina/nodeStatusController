@@ -1,8 +1,8 @@
-# label-operator
-// TODO(user): Add simple overview of use/purpose
+# Pod Force Termination
+[OVERVIEW]
 
 ## Description
-// TODO(user): An in-depth paragraph about your project and overview of use
+[DESCRIPTION]
 
 ## Getting Started
 
