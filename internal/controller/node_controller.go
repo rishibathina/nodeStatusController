@@ -126,6 +126,13 @@ func (r *NodeReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 					return ctrl.Result{}, err
 				}
 				log.Info("Added terminating label to node", "node", node.Name)
+
+				minGracePeriod := getTerminationGracePeriod(node)
+
+				if minGracePeriod > 0 {
+					return ctrl.Result{RequeueAfter: minGracePeriod * time.Second}, nil
+				}
+				
 				return ctrl.Result{RequeueAfter: 30 * time.Second}, nil
 			}
 
@@ -179,4 +186,24 @@ func checkOutOfService(node *corev1.Node) (bool, error) {
 		return true, nil
 	}
 	return false, nil
+}
+
+func getTerminationGracePeriod(ctx context.Context, client client.Client, node *corev1.Node) int64 {
+
+	podList := &corev1.PodList{}
+	err := client.List(ctx, podList, client.MatchingFields{"spec.nodeName": node.Name})
+	if err != nil {
+		return 0 
+	}
+
+	for _, pod := range podList.Items {
+		if pod.DeletionTimestamp != nil {
+
+			if pod.Spec.TerminationGracePeriodSeconds != nil {
+				return *pod.Spec.TerminationGracePeriodSeconds
+			}
+			return 30 
+		}
+	}
+	return 0
 }
