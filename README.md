@@ -1,8 +1,8 @@
-# label-operator
-// TODO(user): Add simple overview of use/purpose
+# Pod Force Termination
+[OVERVIEW]
 
 ## Description
-// TODO(user): An in-depth paragraph about your project and overview of use
+[DESCRIPTION]
 
 ## Getting Started
 
@@ -90,7 +90,6 @@ kubectl apply -f https://raw.githubusercontent.com/<org>/label-operator/<tag or 
 ```
 
 ## Contributing
-// TODO(user): Add detailed information on how you would like others to contribute to this project
 
 **NOTE:** Run `make help` for more information on all potential `make` targets
 
