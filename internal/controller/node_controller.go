@@ -205,25 +205,6 @@ func checkNodeReady(node *corev1.Node) (bool, bool) {
 
 }
 
-// func (r *NodeReconciler) checkOutOfService(ctx context.Context, node *corev1.Node) (bool, error) {
-// 	if hasTaint(&node.Spec.Taints, &outOfServiceTaint) { // if node has out-of-service
-// 		// remove the taint
-// 		node.Spec.Taints = removeTaint(&outOfServiceTaint, &node.Spec.Taints)
-
-// 		//remove the label if it is there
-// 		delete(node.Labels, terminatingLabelKey)
-
-// 		// check if it was able remove the taint and label
-// 		if err := r.Update(ctx, &node); err != nil {
-// 			log.Error(err, "unable to remove taint and label")
-// 			return true, err
-// 		}
-// 		log.Info("Removed out-of-service taint and terminating label from node", "node", node.Name)
-// 		return true, nil
-// 	}
-// 	return false, nil
-// }
-
 func (r *NodeReconciler) getTerminationGracePeriod(ctx context.Context, node *corev1.Node) int64 {
 	podList := &corev1.PodList{}
 
