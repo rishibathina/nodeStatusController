@@ -30,6 +30,8 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	// "sigs.k8s.io/controller-runtime/pkg/log"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/fields"
 
 	// error package
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -37,6 +39,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/event"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	// "sigs.k8s.io/controller-runtime/pkg/reflect"
+
+	"k8s.io/client-go/kubernetes"
 )
 
 const (
@@ -58,7 +62,8 @@ var log = ctrl.Log.WithName("terminationController")
 // NodeReconciler reconciles a Node object
 type NodeReconciler struct {
 	client.Client
-	Scheme *runtime.Scheme
+	Scheme     *runtime.Scheme
+	KubeClient *kubernetes.Clientset
 }
 
 // +kubebuilder:rbac:groups=core,resources=nodes,verbs=get;list;watch;create;update;patch
@@ -245,7 +250,10 @@ func hasTaint(node *corev1.Node, taintToCheck *corev1.Taint) bool {
 func (r *NodeReconciler) arePodsTerminating(ctx context.Context, node *corev1.Node) (bool, error) {
 
 	podList := &corev1.PodList{}
-	err := r.Client.List(ctx, podList, client.MatchingFields{"spec.nodeName": node.Name})
+	podList, err := r.KubeClient.CoreV1().Pods("").List(ctx, metav1.ListOptions{
+		FieldSelector: fields.SelectorFromSet(fields.Set{"spec.nodeName": node.Name}).String(),
+	})
+
 	if err != nil {
 		log.Error(err, "unable to list pods on node", "node", node.Name, "error", err)
 		return false, err

@@ -36,6 +36,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 
 	"github.com/rishibathina/nodeStatusController/internal/controller"
+	"k8s.io/client-go/kubernetes" // Add this import statement
 	// +kubebuilder:scaffold:imports
 )
 
@@ -142,9 +143,23 @@ func main() {
 		os.Exit(1)
 	}
 
+	cfg := mgr.GetConfig()
+	if cfg == nil {
+		setupLog.Error(err, "unable to get kubeconfig")
+		os.Exit(1)
+	}
+
+	// Create the Kubernetes Clientset
+	kubeClient, err := kubernetes.NewForConfig(cfg)
+	if err != nil {
+		setupLog.Error(err, "unable to create kubernetes clientset")
+		os.Exit(1)
+	}
+
 	if err = (&controller.NodeReconciler{
-		Client: mgr.GetClient(),
-		Scheme: mgr.GetScheme(),
+		Client:     mgr.GetClient(),
+		Scheme:     mgr.GetScheme(),
+		KubeClient: kubeClient,
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "Node")
 		os.Exit(1)
